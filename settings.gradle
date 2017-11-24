@@ -1,0 +1,4 @@
+include 'net.orange.yap.util'
+include 'net.orange.yap.machine'
+include 'net.orange.yap.machine-impl'
+include 'net.orange.yap.main'

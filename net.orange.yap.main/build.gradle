@@ -1,0 +1,11 @@
+apply plugin: 'application'
+
+mainClassName = "net.orange.yap.main.CommonsGeneticSearch"
+
+dependencies {
+    compile project(':net.orange.yap.util')
+    compile project(':net.orange.yap.machine')
+    compile project(':net.orange.yap.machine-impl')
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+}
+

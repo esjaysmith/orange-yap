@@ -1,0 +1,6 @@
+
+dependencies {
+    compile project(':net.orange.yap.util')
+    compile project(':net.orange.yap.machine')
+    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+}
