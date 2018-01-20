@@ -13,7 +13,8 @@ task createStartScripts() {
         // From https://discuss.gradle.org/t/support-for-multiple-application-scripts-in-application-plugin/508/3
     }
 }
-def scripts = ['genetic_search_example': 'net.orange.yap.main.CommonsGeneticSearch'
+def scripts = ['boolean_parity_example': 'net.orange.yap.main.CommonsGeneticSearch',
+               'py4j_gateway'          : 'net.orange.yap.main.CommonsGAEntryPoint'
 ]
 scripts.each() { scriptName, className ->
     def t = tasks.create(name: scriptName + 'StartScript', type: CreateStartScripts) {

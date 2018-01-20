@@ -50,6 +50,16 @@ public class YapRuntimeFactoryImpl implements YapRuntimeFactory {
         this.random = new Random(randomSeed);
     }
 
+    @Override
+    public int getMaximumProgramPoints() {
+        return maximumProgramPoints;
+    }
+
+    @Override
+    public int getMaximumExecutionInstructions() {
+        return maximumExecutionInstructions;
+    }
+
     public void setParser(CodeParser parser) {
         this.parser = parser;
     }

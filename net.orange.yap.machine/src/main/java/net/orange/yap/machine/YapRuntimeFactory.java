@@ -11,6 +11,10 @@ package net.orange.yap.machine;
  */
 public interface YapRuntimeFactory {
 
+    int getMaximumProgramPoints();
+
+    int getMaximumExecutionInstructions();
+
     /**
      * Create a new instance of the runtime as configured by this factory.
      *

@@ -1,16 +1,11 @@
 package net.orange.yap.main;
 
+import net.orange.yap.machine.YapRuntimeFactory;
 import net.orange.yap.machine.eval.EvaluationStrategy;
-import net.orange.yap.machine.impl.YapRuntimeFactoryImpl;
 import net.orange.yap.main.evaluation.BooleanParityProblem;
-import net.orange.yap.main.genetic.commons.CommonsChromosome;
-import net.orange.yap.main.genetic.commons.CommonsGeneticAlgorithmBuilder;
-import net.orange.yap.main.genetic.commons.CommonsStopCondition;
-import net.orange.yap.main.genetic.commons.EvolutionHistory;
+import net.orange.yap.main.genetic.commons.*;
 import org.apache.commons.cli.*;
-import org.apache.commons.math3.genetics.GeneticAlgorithm;
 import org.apache.commons.math3.genetics.Population;
-import org.apache.commons.math3.util.Pair;
 
 import java.util.logging.Logger;
 
@@ -26,48 +21,11 @@ public class CommonsGeneticSearch {
 
     public static void main(String[] args) {
         Options options = new Options();
-        options.addOption("h", "help", false, "Print this message");
-        options.addOption("d", "dry-run", false, "Show settings but do not start a run");
-        options.addOption("s", "seed", false, "Use a different randomisation seed for each run");
+        MainUtil.addBasicOptions(options);
         options.addOption(Option.builder().longOpt("parity")
                 .desc("The parity of the boolean parity problem the genetic algorithm is to solve")
                 .hasArg()
                 .argName("LEN")
-                .build());
-        options.addOption(Option.builder().longOpt("max-points")
-                .desc("The maximum length of a program in points")
-                .hasArg()
-                .argName("NUM")
-                .build());
-        options.addOption(Option.builder().longOpt("max-instructions")
-                .desc("The maximum amount of instructions a machine is allowed to execute as a program")
-                .hasArg()
-                .argName("NUM")
-                .build());
-        options.addOption(Option.builder().longOpt("population-size")
-                .desc("Size of the population (number of individuals)")
-                .hasArg()
-                .argName("SIZE")
-                .build());
-        options.addOption(Option.builder().longOpt("tournament-arity")
-                .desc("Number of individuals per group during tournament selection")
-                .hasArg()
-                .argName("ARITY")
-                .build());
-        options.addOption(Option.builder().longOpt("elitism-rate")
-                .desc("Determines the rate of elitism")
-                .hasArg()
-                .argName("RATE")
-                .build());
-        options.addOption(Option.builder().longOpt("crossover-rate")
-                .desc("Determines the rate of crossover")
-                .hasArg()
-                .argName("RATE")
-                .build());
-        options.addOption(Option.builder().longOpt("mutation-rate")
-                .desc("Determines the rate of mutation")
-                .hasArg()
-                .argName("RATE")
                 .build());
         options.addOption(Option.builder().longOpt("max-generations")
                 .desc("The maximum number of generations the genetic algorithm can run")
@@ -79,7 +37,6 @@ public class CommonsGeneticSearch {
                 .hasArg()
                 .argName("NUM")
                 .build());
-
 
         try {
             CommandLine command = new DefaultParser().parse(options, args);
@@ -100,43 +57,16 @@ public class CommonsGeneticSearch {
             seed = System.currentTimeMillis();
         }
 
+        final YapRuntimeFactory factory = MainUtil.createYapRuntimeFactory(command, seed);
+
         // Create the boolean parity problem.
         int parity = 12;
         if (command.hasOption("parity")) {
             parity = Integer.parseInt(command.getOptionValue("parity"));
         }
-        int maxPoints = 50;
-        if (command.hasOption("max-points")) {
-            maxPoints = Integer.parseInt(command.getOptionValue("max-points"));
-        }
-        int maxInstructions = 50;
-        if (command.hasOption("max-instructions")) {
-            maxInstructions = Integer.parseInt(command.getOptionValue("max-instructions"));
-        }
-
-        YapRuntimeFactoryImpl factory = new YapRuntimeFactoryImpl(seed);
-        factory.setMaximumProgramPoints(maxPoints);
-        factory.setMaximumExecutionInstructions(maxInstructions);
 
         final EvaluationStrategy evaluation = new BooleanParityProblem(factory.create(), parity);
-
-        // Construct the builder and supply the command line parameters.
-        CommonsGeneticAlgorithmBuilder builder = new CommonsGeneticAlgorithmBuilder(evaluation);
-        if (command.hasOption("population-size")) {
-            builder = builder.setPopulationLimit(Integer.parseInt(command.getOptionValue("population-size")));
-        }
-        if (command.hasOption("tournament-arity")) {
-            builder = builder.setTournamentArity(Integer.parseInt(command.getOptionValue("tournament-arity")));
-        }
-        if (command.hasOption("elitism-rate")) {
-            builder = builder.setElitismRate(Float.parseFloat(command.getOptionValue("elitism-rate")));
-        }
-        if (command.hasOption("crossover-rate")) {
-            builder = builder.setCrossoverRate(Float.parseFloat(command.getOptionValue("crossover-rate")));
-        }
-        if (command.hasOption("mutation-rate")) {
-            builder = builder.setMutationRate(Float.parseFloat(command.getOptionValue("mutation-rate")));
-        }
+        final CommonsGeneticAlgorithmBuilder builder = MainUtil.createBuilder(command, evaluation);
 
         int maxGenerations = 100;
         if (command.hasOption("max-generations")) {
@@ -152,8 +82,8 @@ public class CommonsGeneticSearch {
                 "dry-run:\t\t" + command.hasOption("dry-run") + "\n" +
                 "seed:\t\t\t" + seed + "L\n" +
                 "parity:\t\t\t" + parity + " (2^" + parity + "=" + ((int) Math.pow(2, parity)) + ")\n" +
-                "max-points:\t\t" + maxPoints + "\n" +
-                "max-instructions:\t" + maxInstructions + "\n" +
+                "max-points:\t\t" + factory.getMaximumProgramPoints() + "\n" +
+                "max-instructions:\t" + factory.getMaximumExecutionInstructions() + "\n" +
                 "population-size:\t" + builder.getPopulationLimit() + "\n" +
                 "tournament-arity:\t" + builder.getTournamentArity() + "\n" +
                 "elitism-rate:\t\t" + builder.getElitismRate() + "\n" +
@@ -172,9 +102,6 @@ public class CommonsGeneticSearch {
 
     private static EvolutionHistory runOnce(int maxGenerations, float maxFitness, CommonsGeneticAlgorithmBuilder builder) {
         final EvolutionHistory history = new EvolutionHistory();
-        Runtime.getRuntime().addShutdownHook(new Thread(() ->
-                System.out.println("The overall best program found in this run is " + history.getBestChromosome() + ".")));
-
         final CommonsStopCondition stopCondition = new CommonsStopCondition(maxGenerations, maxFitness);
         stopCondition.setCallback(new CommonsStopCondition.Listener() {
             @Override
@@ -191,8 +118,11 @@ public class CommonsGeneticSearch {
             }
         });
 
-        Pair<GeneticAlgorithm, Population> pair = builder.build();
-        pair.getFirst().evolve(pair.getSecond(), stopCondition);
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+                System.out.println("The overall best program found in this run is " + history.getBestChromosome() + ".")));
+
+        CommonsGeneticExperiment experiment = new CommonsGeneticExperiment(builder);
+        experiment.evolveUntilCompletion(history, stopCondition);
         return history;
     }
 }
