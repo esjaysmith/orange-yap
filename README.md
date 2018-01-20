@@ -9,7 +9,7 @@ In a terminal cd to the installation directory and issue the following command t
 ./gradlew
 
 The demo program runs an evolutionary algorithm to solve the boolean parity problem. For help try:  
-bin/genetic_search.sh -h
+./net.orange.yap.main/build/scripts/genetic_search_example -h
 
 And omit '-h' to run.
 

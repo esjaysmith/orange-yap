@@ -1,7 +1,7 @@
 description = 'Yet another push-v3 implementation'
 version = '0.1'
 
-defaultTasks 'build', ':net.orange.yap.main:installDist'
+defaultTasks 'build'
 
 subprojects {
     apply plugin: 'java'

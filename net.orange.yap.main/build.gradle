@@ -1,11 +1,38 @@
 apply plugin: 'application'
 
-mainClassName = "net.orange.yap.main.CommonsGeneticSearch"
-
 dependencies {
     compile project(':net.orange.yap.util')
     compile project(':net.orange.yap.machine')
     compile project(':net.orange.yap.machine-impl')
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    compile group: 'net.sf.py4j', name: 'py4j', version: '0.10.6'
 }
 
+task createStartScripts() {
+    doLast {
+        // From https://discuss.gradle.org/t/support-for-multiple-application-scripts-in-application-plugin/508/3
+    }
+}
+def scripts = ['genetic_search_example': 'net.orange.yap.main.CommonsGeneticSearch'
+]
+scripts.each() { scriptName, className ->
+    def t = tasks.create(name: scriptName + 'StartScript', type: CreateStartScripts) {
+        mainClassName = className
+        applicationName = scriptName
+        outputDir = new File(project.buildDir, 'scripts')
+        classpath = jar.outputs.files + project.configurations.runtime
+    }
+    applicationDistribution.into("bin") {
+        from(t)
+        fileMode = 0755
+    }
+    createStartScripts.dependsOn(t)
+}
+
+task copyLibs(type: Copy) {
+    from jar.outputs.files + project.configurations.runtime
+    into "$buildDir/lib"
+}
+
+build.dependsOn copyLibs
+startScripts.enabled = false
