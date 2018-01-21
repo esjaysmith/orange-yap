@@ -3,8 +3,10 @@ package net.orange.yap.main;
 import net.orange.yap.machine.YapRuntimeFactory;
 import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.main.evaluation.RemoteEvaluationStrategy;
+import net.orange.yap.main.genetic.commons.ChromosomeFactory;
 import net.orange.yap.main.genetic.commons.CommonsGeneticAlgorithmBuilder;
-import net.orange.yap.main.genetic.commons.CommonsGeneticExperiment;
+import net.orange.yap.main.genetic.commons.RemoteGeneticExperiment;
+import net.orange.yap.main.genetic.commons.RemoteChromosomeFactoryImpl;
 import org.apache.commons.cli.*;
 import py4j.GatewayServer;
 
@@ -15,14 +17,10 @@ import py4j.GatewayServer;
  */
 public class CommonsGAEntryPoint {
 
-    private final CommonsGeneticExperiment experiment;
+    private final RemoteGeneticExperiment experiment;
 
     CommonsGAEntryPoint(CommonsGeneticAlgorithmBuilder builder) {
-        this.experiment = new CommonsGeneticExperiment(builder);
-    }
-
-    public CommonsGeneticExperiment getExperiment() {
-        return experiment;
+        this.experiment = new RemoteGeneticExperiment(builder);
     }
 
     public static void main(String[] args) {
@@ -34,14 +32,15 @@ public class CommonsGAEntryPoint {
             if (command.hasOption("help")) {
                 new HelpFormatter().printHelp("CommonsGeneticSearch", options);
             } else {
-                final YapRuntimeFactory factory = MainUtil.createYapRuntimeFactory(command);
-                final EvaluationStrategy evaluation = new RemoteEvaluationStrategy(factory.create());
-                final CommonsGeneticAlgorithmBuilder builder = MainUtil.createBuilder(command, evaluation);
+                final YapRuntimeFactory runtimeFactory = MainUtil.createYapRuntimeFactory(command);
+                final EvaluationStrategy evaluation = new RemoteEvaluationStrategy(runtimeFactory.create());
+                final ChromosomeFactory chromosomeFactory = new RemoteChromosomeFactoryImpl(evaluation);
+                final CommonsGeneticAlgorithmBuilder builder = MainUtil.createBuilder(command, chromosomeFactory);
                 final GatewayServer gatewayServer = new GatewayServer(new CommonsGAEntryPoint(builder));
                 String overview = "Gateway server for push machine evolution settings:\n" +
                         "dry-run:\t\t" + command.hasOption("dry-run") + "\n" +
-                        "max-points:\t\t" + factory.getMaximumProgramPoints() + "\n" +
-                        "max-instructions:\t" + factory.getMaximumExecutionInstructions() + "\n" +
+                        "max-points:\t\t" + runtimeFactory.getMaximumProgramPoints() + "\n" +
+                        "max-instructions:\t" + runtimeFactory.getMaximumExecutionInstructions() + "\n" +
                         "population-size:\t" + builder.getPopulationLimit() + "\n" +
                         "tournament-arity:\t" + builder.getTournamentArity() + "\n" +
                         "elitism-rate:\t\t" + builder.getElitismRate() + "\n" +
@@ -50,12 +49,16 @@ public class CommonsGAEntryPoint {
                 System.out.println(overview);
                 if (!command.hasOption("dry-run")) {
                     gatewayServer.start();
-                    System.out.println("Server started.");
+                    System.out.println("Server started on port " + gatewayServer.getPort() + ".");
                 }
             }
         } catch (ParseException e) {
             System.err.println("Command line parsing failed. Reason: " + e.getMessage());
         }
 
+    }
+
+    public RemoteGeneticExperiment getExperiment() {
+        return experiment;
     }
 }

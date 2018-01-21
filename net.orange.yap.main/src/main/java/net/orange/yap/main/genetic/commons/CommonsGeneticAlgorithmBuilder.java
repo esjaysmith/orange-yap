@@ -1,7 +1,5 @@
 package net.orange.yap.main.genetic.commons;
 
-import net.orange.yap.machine.YapRuntime;
-import net.orange.yap.machine.eval.EvaluationStrategy;
 import org.apache.commons.math3.genetics.ElitisticListPopulation;
 import org.apache.commons.math3.genetics.GeneticAlgorithm;
 import org.apache.commons.math3.genetics.Population;
@@ -16,16 +14,16 @@ import org.apache.commons.math3.util.Pair;
  */
 public class CommonsGeneticAlgorithmBuilder {
 
-    private final EvaluationStrategy evaluation;
+    private final ChromosomeFactory chromosomeFactory;
     private int population_limit = 200;
     private int tournament_arity = 5;
     private float elitism_rate = .5f;
     private float crossover_rate = .5f;
     private float mutation_rate = .5f;
 
-    public CommonsGeneticAlgorithmBuilder(EvaluationStrategy evaluation) {
+    public CommonsGeneticAlgorithmBuilder(ChromosomeFactory factory) {
         GeneticAlgorithm.setRandomGenerator(new JDKRandomGenerator(0));
-        this.evaluation = evaluation;
+        this.chromosomeFactory = factory;
     }
 
     public int getPopulationLimit() {
@@ -73,18 +71,17 @@ public class CommonsGeneticAlgorithmBuilder {
         return this;
     }
 
-    public Pair<GeneticAlgorithm, Population> build() {
+    Pair<GeneticAlgorithm, Population> build() {
         // Initialize a new genetic algorithm.
-        final YapRuntime runtime = evaluation.getRuntime();
-        final CommonsCrossover crossover = new CommonsCrossover(evaluation);
-        final CommonsMutation mutation = new CommonsMutation(runtime);
+        final CommonsCrossover crossover = new CommonsCrossover(chromosomeFactory);
+        final CommonsMutation mutation = new CommonsMutation(chromosomeFactory);
         final TournamentSelection selection = new TournamentSelection(tournament_arity);
         final GeneticAlgorithm ga = new GeneticAlgorithm(crossover, crossover_rate, mutation, mutation_rate, selection);
 
         // Create the initial population.
         final Population initial = new ElitisticListPopulation(population_limit, elitism_rate);
         while (initial.getPopulationSize() < population_limit) {
-            initial.addChromosome(new CommonsChromosome(runtime.generator().generate(), evaluation));
+            initial.addChromosome(chromosomeFactory.createChromosome());
         }
 
         return new Pair<>(ga, initial);

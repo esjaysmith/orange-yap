@@ -1,8 +1,8 @@
 package net.orange.yap.main;
 
 import net.orange.yap.machine.YapRuntimeFactory;
-import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.machine.impl.YapRuntimeFactoryImpl;
+import net.orange.yap.main.genetic.commons.ChromosomeFactory;
 import net.orange.yap.main.genetic.commons.CommonsGeneticAlgorithmBuilder;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -76,9 +76,9 @@ class MainUtil {
         return factory;
     }
 
-    static CommonsGeneticAlgorithmBuilder createBuilder(CommandLine command, EvaluationStrategy evaluation) {
+    static CommonsGeneticAlgorithmBuilder createBuilder(CommandLine command, ChromosomeFactory factory) {
         // Construct the builder and supply the command line parameters.
-        CommonsGeneticAlgorithmBuilder builder = new CommonsGeneticAlgorithmBuilder(evaluation);
+        CommonsGeneticAlgorithmBuilder builder = new CommonsGeneticAlgorithmBuilder(factory);
         if (command.hasOption("population-size")) {
             builder = builder.setPopulationLimit(Integer.parseInt(command.getOptionValue("population-size")));
         }

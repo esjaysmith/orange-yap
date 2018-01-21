@@ -18,6 +18,7 @@ public class CommonsStopCondition extends FixedGenerationCount {
     private final float maximumFitness;
     private Listener callback = new Listener() {
     };
+
     public CommonsStopCondition(int maxGenerations, float maximumFitness) throws NumberIsTooSmallException {
         super(maxGenerations);
         this.maximumFitness = maximumFitness;

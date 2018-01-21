@@ -5,6 +5,8 @@ import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.genetics.Chromosome;
 import org.apache.commons.math3.genetics.MutationPolicy;
 
+import java.util.Objects;
+
 /**
  * User: sjsmit
  * Date: 12/08/15
@@ -12,15 +14,18 @@ import org.apache.commons.math3.genetics.MutationPolicy;
  */
 public class CommonsMutation implements MutationPolicy {
 
+    private final ChromosomeFactory factory;
     private final YapRuntime runtime;
 
-    public CommonsMutation(YapRuntime runtime) {
-        this.runtime = runtime;
+    CommonsMutation(ChromosomeFactory factory) {
+        Objects.requireNonNull(factory, "An chromosome factory is required.");
+        this.factory = factory;
+        this.runtime = factory.getRuntime();
     }
 
     @Override
     public Chromosome mutate(Chromosome original) throws MathIllegalArgumentException {
         CommonsChromosome chromo = (CommonsChromosome) original;
-        return new CommonsChromosome(runtime.generator().mutate(chromo.getProgram()), chromo.getEvaluation());
+        return factory.createChromosome(runtime.generator().mutate(chromo.getProgram()));
     }
 }

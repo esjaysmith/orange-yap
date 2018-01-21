@@ -1,7 +1,6 @@
 package net.orange.yap.main.genetic.commons;
 
 import net.orange.yap.machine.YapRuntime;
-import net.orange.yap.machine.eval.EvaluationStrategy;
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.genetics.Chromosome;
 import org.apache.commons.math3.genetics.ChromosomePair;
@@ -16,22 +15,21 @@ import java.util.Objects;
  */
 public class CommonsCrossover implements CrossoverPolicy {
 
+    private final ChromosomeFactory factory;
     private final YapRuntime runtime;
-    private final EvaluationStrategy evaluation;
 
-    public CommonsCrossover(EvaluationStrategy evaluation) {
-        Objects.requireNonNull(evaluation, "An evaluation strategy is required.");
-        this.runtime = evaluation.getRuntime();
-        this.evaluation = evaluation;
+    CommonsCrossover(ChromosomeFactory factory) {
+        Objects.requireNonNull(factory, "An chromosome factory is required.");
+        this.factory = factory;
+        this.runtime = factory.getRuntime();
     }
 
     @Override
     public ChromosomePair crossover(Chromosome first, Chromosome second) throws MathIllegalArgumentException {
         CommonsChromosome one = (CommonsChromosome) first;
         CommonsChromosome two = (CommonsChromosome) second;
-        CommonsChromosome c1 = new CommonsChromosome(runtime.generator().combine(one.getProgram(), two.getProgram()), evaluation);
-        CommonsChromosome c2 = new CommonsChromosome(runtime.generator().combine(two.getProgram(), one.getProgram()), evaluation);
-
+        Chromosome c1 = factory.createChromosome(runtime.generator().combine(one.getProgram(), two.getProgram()));
+        Chromosome c2 = factory.createChromosome(runtime.generator().combine(two.getProgram(), one.getProgram()));
         return new ChromosomePair(c1, c2);
     }
 }

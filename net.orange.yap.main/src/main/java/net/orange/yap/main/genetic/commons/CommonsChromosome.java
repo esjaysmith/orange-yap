@@ -15,7 +15,7 @@ public class CommonsChromosome extends Chromosome {
     private final Program program;
     private final EvaluationStrategy evaluation;
 
-    public CommonsChromosome(Program program, EvaluationStrategy evaluation) {
+    CommonsChromosome(Program program, EvaluationStrategy evaluation) {
         this.program = program;
         this.evaluation = evaluation;
     }
@@ -24,7 +24,7 @@ public class CommonsChromosome extends Chromosome {
         return program;
     }
 
-    public EvaluationStrategy getEvaluation() {
+    EvaluationStrategy getEvaluation() {
         return evaluation;
     }
 
@@ -48,6 +48,6 @@ public class CommonsChromosome extends Chromosome {
 
     @Override
     public String toString() {
-        return program + " with fitness=" + getFitness();
+        return program + " with fitness=" + fitness();
     }
 }

@@ -66,7 +66,8 @@ public class CommonsGeneticSearch {
         }
 
         final EvaluationStrategy evaluation = new BooleanParityProblem(factory.create(), parity);
-        final CommonsGeneticAlgorithmBuilder builder = MainUtil.createBuilder(command, evaluation);
+        final ChromosomeFactory chromosomeFactory = new CommonsChromosomeFactoryImpl(evaluation);
+        final CommonsGeneticAlgorithmBuilder builder = MainUtil.createBuilder(command, chromosomeFactory);
 
         int maxGenerations = 100;
         if (command.hasOption("max-generations")) {
@@ -121,8 +122,8 @@ public class CommonsGeneticSearch {
         Runtime.getRuntime().addShutdownHook(new Thread(() ->
                 System.out.println("The overall best program found in this run is " + history.getBestChromosome() + ".")));
 
-        CommonsGeneticExperiment experiment = new CommonsGeneticExperiment(builder);
-        experiment.evolveUntilCompletion(history, stopCondition);
+        RemoteGeneticExperiment experiment = new RemoteGeneticExperiment(builder);
+        experiment.evolveUntilCompletion(stopCondition);
         return history;
     }
 }
