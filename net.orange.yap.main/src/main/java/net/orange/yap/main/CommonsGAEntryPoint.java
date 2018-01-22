@@ -1,5 +1,6 @@
 package net.orange.yap.main;
 
+import net.orange.yap.machine.Machine;
 import net.orange.yap.machine.YapRuntimeFactory;
 import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.main.evaluation.RemoteEvaluationStrategy;
@@ -24,17 +25,19 @@ import java.util.List;
  */
 public class CommonsGAEntryPoint {
 
+    private final YapRuntimeFactory runtimeFactory;
     private final CommonsGeneticAlgorithmBuilder builder;
     private GeneticAlgorithm algorithm;
     private Population population;
 
-    private CommonsGAEntryPoint(CommonsGeneticAlgorithmBuilder builder) {
+    private CommonsGAEntryPoint(YapRuntimeFactory runtimeFactory, CommonsGeneticAlgorithmBuilder builder) {
+        this.runtimeFactory = runtimeFactory;
         this.builder = builder;
-        restart();
+        reset();
     }
 
     @SuppressWarnings("WeakerAccess")
-    public void restart() {
+    public void reset() {
         Pair<GeneticAlgorithm, Population> pair = builder.build();
         this.algorithm = pair.getFirst();
         this.population = pair.getSecond();
@@ -56,7 +59,11 @@ public class CommonsGAEntryPoint {
         this.population = algorithm.nextGeneration(population);
     }
 
-    public RemoteChromosome getFittestChromosome() {
+    public void execute(Machine m) {
+        runtimeFactory.create().execute(m);
+    }
+
+    public RemoteChromosome getFittest() {
         return (RemoteChromosome) population.getFittestChromosome();
     }
 
@@ -73,7 +80,7 @@ public class CommonsGAEntryPoint {
                 final EvaluationStrategy evaluation = new RemoteEvaluationStrategy(runtimeFactory.create());
                 final ChromosomeFactory chromosomeFactory = new RemoteChromosomeFactoryImpl(evaluation);
                 final CommonsGeneticAlgorithmBuilder builder = MainUtil.createBuilder(command, chromosomeFactory);
-                final GatewayServer gatewayServer = new GatewayServer(new CommonsGAEntryPoint(builder));
+                final GatewayServer gatewayServer = new GatewayServer(new CommonsGAEntryPoint(runtimeFactory, builder));
                 String overview = "Gateway server for push machine evolution settings:\n" +
                         "dry-run:\t\t" + command.hasOption("dry-run") + "\n" +
                         "max-points:\t\t" + runtimeFactory.getMaximumProgramPoints() + "\n" +

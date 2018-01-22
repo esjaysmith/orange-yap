@@ -36,10 +36,6 @@ public class RemoteChromosome extends CommonsChromosome {
         return isEvaluated() ? fitness : -1f;
     }
 
-    public void execute() {
-        getEvaluation().getRuntime().execute(machine);
-    }
-
     public String toCodeString() {
         return getEvaluation().getRuntime().asString(getProgram());
     }
