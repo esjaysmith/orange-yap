@@ -5,10 +5,17 @@ import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.main.evaluation.RemoteEvaluationStrategy;
 import net.orange.yap.main.genetic.commons.ChromosomeFactory;
 import net.orange.yap.main.genetic.commons.CommonsGeneticAlgorithmBuilder;
-import net.orange.yap.main.genetic.commons.RemoteGeneticExperiment;
+import net.orange.yap.main.genetic.commons.RemoteChromosome;
 import net.orange.yap.main.genetic.commons.RemoteChromosomeFactoryImpl;
 import org.apache.commons.cli.*;
+import org.apache.commons.math3.genetics.Chromosome;
+import org.apache.commons.math3.genetics.GeneticAlgorithm;
+import org.apache.commons.math3.genetics.Population;
+import org.apache.commons.math3.util.Pair;
 import py4j.GatewayServer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: sjsmit
@@ -17,10 +24,40 @@ import py4j.GatewayServer;
  */
 public class CommonsGAEntryPoint {
 
-    private final RemoteGeneticExperiment experiment;
+    private final CommonsGeneticAlgorithmBuilder builder;
+    private GeneticAlgorithm algorithm;
+    private Population population;
 
-    CommonsGAEntryPoint(CommonsGeneticAlgorithmBuilder builder) {
-        this.experiment = new RemoteGeneticExperiment(builder);
+    private CommonsGAEntryPoint(CommonsGeneticAlgorithmBuilder builder) {
+        this.builder = builder;
+        restart();
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public void restart() {
+        Pair<GeneticAlgorithm, Population> pair = builder.build();
+        this.algorithm = pair.getFirst();
+        this.population = pair.getSecond();
+    }
+
+    public List<RemoteChromosome> listNewChromosomes() {
+        List<RemoteChromosome> chromosomes = new ArrayList<>();
+        for (Chromosome next : population) {
+            RemoteChromosome chromosome = (RemoteChromosome) next;
+            if (!chromosome.isEvaluated()) {
+                chromosomes.add(chromosome);
+            }
+        }
+        return chromosomes;
+    }
+
+    public void nextGeneration() {
+        // Will throw an exception on unevaluated chromosomes.
+        this.population = algorithm.nextGeneration(population);
+    }
+
+    public RemoteChromosome getFittestChromosome() {
+        return (RemoteChromosome) population.getFittestChromosome();
     }
 
     public static void main(String[] args) {
@@ -41,6 +78,7 @@ public class CommonsGAEntryPoint {
                         "dry-run:\t\t" + command.hasOption("dry-run") + "\n" +
                         "max-points:\t\t" + runtimeFactory.getMaximumProgramPoints() + "\n" +
                         "max-instructions:\t" + runtimeFactory.getMaximumExecutionInstructions() + "\n" +
+                        "max-stack-size:\t\t" + runtimeFactory.getMaximumStackDepth() + "\n" +
                         "population-size:\t" + builder.getPopulationLimit() + "\n" +
                         "tournament-arity:\t" + builder.getTournamentArity() + "\n" +
                         "elitism-rate:\t\t" + builder.getElitismRate() + "\n" +
@@ -55,10 +93,5 @@ public class CommonsGAEntryPoint {
         } catch (ParseException e) {
             System.err.println("Command line parsing failed. Reason: " + e.getMessage());
         }
-
-    }
-
-    public RemoteGeneticExperiment getExperiment() {
-        return experiment;
     }
 }

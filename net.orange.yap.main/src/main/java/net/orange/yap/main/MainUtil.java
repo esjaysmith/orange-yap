@@ -29,6 +29,11 @@ class MainUtil {
                 .hasArg()
                 .argName("NUM")
                 .build());
+        options.addOption(Option.builder().longOpt("max-stack-size")
+                .desc("The maximum size for each of the machine's stacks")
+                .hasArg()
+                .argName("NUM")
+                .build());
         options.addOption(Option.builder().longOpt("population-size")
                 .desc("Size of the population (number of individuals)")
                 .hasArg()
@@ -69,10 +74,15 @@ class MainUtil {
         if (command.hasOption("max-instructions")) {
             maxInstructions = Integer.parseInt(command.getOptionValue("max-instructions"));
         }
+        int maxStackSize = 256;
+        if (command.hasOption("max-stack-size")) {
+            maxStackSize = Integer.parseInt(command.getOptionValue("max-stack-size"));
+        }
 
         YapRuntimeFactoryImpl factory = new YapRuntimeFactoryImpl(seed);
         factory.setMaximumProgramPoints(maxPoints);
         factory.setMaximumExecutionInstructions(maxInstructions);
+        factory.setMaximumStackDepth(maxStackSize);
         return factory;
     }
 

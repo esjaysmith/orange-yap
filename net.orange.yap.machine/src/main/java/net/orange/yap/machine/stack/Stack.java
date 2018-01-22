@@ -66,7 +66,7 @@ public interface Stack<E> {
      */
     void clear();
 
-    List<E> toUnmodifiableList();
+    List<E> toList();
 
     Stream<E> stream();
 }

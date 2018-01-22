@@ -5,7 +5,9 @@ import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.main.evaluation.BooleanParityProblem;
 import net.orange.yap.main.genetic.commons.*;
 import org.apache.commons.cli.*;
+import org.apache.commons.math3.genetics.GeneticAlgorithm;
 import org.apache.commons.math3.genetics.Population;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.logging.Logger;
 
@@ -121,9 +123,10 @@ public class CommonsGeneticSearch {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() ->
                 System.out.println("The overall best program found in this run is " + history.getBestChromosome() + ".")));
-
-        RemoteGeneticExperiment experiment = new RemoteGeneticExperiment(builder);
-        experiment.evolveUntilCompletion(stopCondition);
+        Pair<GeneticAlgorithm, Population> pair = builder.build();
+        GeneticAlgorithm algorithm = pair.getFirst();
+        Population population = pair.getSecond();
+        algorithm.evolve(population, stopCondition);
         return history;
     }
 }

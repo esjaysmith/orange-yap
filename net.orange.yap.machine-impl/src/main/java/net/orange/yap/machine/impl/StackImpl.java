@@ -79,7 +79,7 @@ class StackImpl<E> implements Stack<E> {
     }
 
     @Override
-    public List<E> toUnmodifiableList() {
+    public List<E> toList() {
         return Collections.unmodifiableList(stack);
     }
 

@@ -71,7 +71,7 @@ public class CommonsGeneticAlgorithmBuilder {
         return this;
     }
 
-    Pair<GeneticAlgorithm, Population> build() {
+    public Pair<GeneticAlgorithm, Population> build() {
         // Initialize a new genetic algorithm.
         final CommonsCrossover crossover = new CommonsCrossover(chromosomeFactory);
         final CommonsMutation mutation = new CommonsMutation(chromosomeFactory);

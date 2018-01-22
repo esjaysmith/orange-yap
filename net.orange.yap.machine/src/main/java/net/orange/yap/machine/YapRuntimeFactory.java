@@ -15,6 +15,8 @@ public interface YapRuntimeFactory {
 
     int getMaximumExecutionInstructions();
 
+    int getMaximumStackDepth();
+
     /**
      * Create a new instance of the runtime as configured by this factory.
      *

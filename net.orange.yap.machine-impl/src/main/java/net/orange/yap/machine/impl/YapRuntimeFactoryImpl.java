@@ -60,6 +60,11 @@ public class YapRuntimeFactoryImpl implements YapRuntimeFactory {
         return maximumExecutionInstructions;
     }
 
+    @Override
+    public int getMaximumStackDepth() {
+        return maximumStackDepth;
+    }
+
     public void setParser(CodeParser parser) {
         this.parser = parser;
     }

@@ -10,10 +10,21 @@ import net.orange.yap.machine.stack.Program;
  * Time: 15:15
  */
 public class RemoteChromosome extends CommonsChromosome {
+
+    private final Machine machine;
     private Double fitness;
 
     RemoteChromosome(Program program, EvaluationStrategy evaluation) {
         super(program, evaluation);
+        this.machine = getEvaluation().getRuntime().createMachine(getProgram());
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public boolean isEvaluated() {
+        return fitness != null;
     }
 
     public void setFitness(double fitness) {
@@ -22,20 +33,11 @@ public class RemoteChromosome extends CommonsChromosome {
 
     @Override
     public double fitness() {
-        if (!isEvaluated()) {
-            this.fitness = super.fitness();
-        }
-        return fitness;
+        return isEvaluated() ? fitness : -1f;
     }
 
-    public boolean isEvaluated() {
-        return fitness != null;
-    }
-
-    public Machine execute() {
-        final Machine m = getEvaluation().getRuntime().createMachine(getProgram());
-
-        return m;
+    public void execute() {
+        getEvaluation().getRuntime().execute(machine);
     }
 
     public String toCodeString() {

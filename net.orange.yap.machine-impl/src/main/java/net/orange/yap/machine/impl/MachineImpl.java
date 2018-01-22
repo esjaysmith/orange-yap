@@ -96,12 +96,12 @@ class MachineImpl implements MachineInternal, Machine, Serializable {
 
     @Override
     public List<Program> listExecutionItems() {
-        return exec.toUnmodifiableList();
+        return exec.toList();
     }
 
     @Override
     public List<Program> listCodeItems() {
-        return code.toUnmodifiableList();
+        return code.toList();
     }
 
     @Override
