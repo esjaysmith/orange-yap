@@ -1,8 +1,10 @@
 package net.orange.yap.main;
 
 import net.orange.yap.machine.Machine;
+import net.orange.yap.machine.YapRuntime;
 import net.orange.yap.machine.YapRuntimeFactory;
 import net.orange.yap.machine.eval.EvaluationStrategy;
+import net.orange.yap.machine.stack.Program;
 import net.orange.yap.main.evaluation.RemoteEvaluationStrategy;
 import net.orange.yap.main.genetic.commons.ChromosomeFactory;
 import net.orange.yap.main.genetic.commons.CommonsGeneticAlgorithmBuilder;
@@ -43,15 +45,23 @@ public class CommonsGAEntryPoint {
         this.population = pair.getSecond();
     }
 
-    public List<RemoteChromosome> listNewChromosomes() {
+    private List<RemoteChromosome> listChromosomes(boolean forceNew) {
         List<RemoteChromosome> chromosomes = new ArrayList<>();
         for (Chromosome next : population) {
             RemoteChromosome chromosome = (RemoteChromosome) next;
-            if (!chromosome.isEvaluated()) {
+            if (!forceNew || !chromosome.isEvaluated()) {
                 chromosomes.add(chromosome);
             }
         }
         return chromosomes;
+    }
+
+    public List<RemoteChromosome> listNewChromosomes() {
+        return listChromosomes(true);
+    }
+
+    public List<RemoteChromosome> listAllChromosomes() {
+        return listChromosomes(false);
     }
 
     public void nextGeneration() {
@@ -59,8 +69,19 @@ public class CommonsGAEntryPoint {
         this.population = algorithm.nextGeneration(population);
     }
 
-    public void execute(Machine m) {
+    public Machine createMachine(Program p) {
+        return runtimeFactory.create().createMachine(p);
+    }
+
+    public void executeMachine(Machine m) {
         runtimeFactory.create().execute(m);
+    }
+
+    public Machine executeProgram(Program p) {
+        final YapRuntime runtime = runtimeFactory.create();
+        final Machine m = runtime.createMachine(p);
+        runtime.execute(m);
+        return m;
     }
 
     public RemoteChromosome getFittest() {

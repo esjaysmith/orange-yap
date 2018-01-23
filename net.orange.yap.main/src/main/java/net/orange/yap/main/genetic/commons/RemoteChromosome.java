@@ -1,6 +1,5 @@
 package net.orange.yap.main.genetic.commons;
 
-import net.orange.yap.machine.Machine;
 import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.machine.stack.Program;
 
@@ -11,16 +10,10 @@ import net.orange.yap.machine.stack.Program;
  */
 public class RemoteChromosome extends CommonsChromosome {
 
-    private final Machine machine;
     private Double fitness;
 
     RemoteChromosome(Program program, EvaluationStrategy evaluation) {
         super(program, evaluation);
-        this.machine = getEvaluation().getRuntime().createMachine(getProgram());
-    }
-
-    public Machine getMachine() {
-        return machine;
     }
 
     public boolean isEvaluated() {
@@ -37,6 +30,6 @@ public class RemoteChromosome extends CommonsChromosome {
     }
 
     public String toCodeString() {
-        return getEvaluation().getRuntime().asString(getProgram());
+        return getRuntime().asString(getProgram());
     }
 }

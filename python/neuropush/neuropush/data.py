@@ -1,11 +1,10 @@
 import numpy as np
 
 
-def binary_sum_train_test(binary_dim=8, num_samples=int(1e3), train_split=.5):
+def binary_sum_train_test(binary_dim=8, num_samples=int(1e2), train_split=.5):
     int2binary = {}
     largest_number = pow(2, binary_dim)
-    binary = np.unpackbits(
-        np.array([range(largest_number)], dtype=np.uint8).T, axis=1)
+    binary = np.unpackbits(np.array([range(largest_number)], dtype=np.uint8).T, axis=1)
     for i in range(largest_number):
         int2binary[i] = binary[i]
     samples = set()

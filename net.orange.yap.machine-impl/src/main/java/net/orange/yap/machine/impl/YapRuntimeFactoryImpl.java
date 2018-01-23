@@ -22,7 +22,7 @@ import java.util.Random;
  */
 public class YapRuntimeFactoryImpl implements YapRuntimeFactory {
 
-    private final Random random;
+    private final long seed;
     private CodeParser parser;
     private CodeSerializer serializer;
     private Interpreter interpreter;
@@ -47,7 +47,7 @@ public class YapRuntimeFactoryImpl implements YapRuntimeFactory {
     }
 
     public YapRuntimeFactoryImpl(long randomSeed) {
-        this.random = new Random(randomSeed);
+        this.seed = randomSeed;
     }
 
     @Override
@@ -118,6 +118,8 @@ public class YapRuntimeFactoryImpl implements YapRuntimeFactory {
         }
         interpreter = interpreter == null ? new InterpreterImpl(codeProcessorMaxElements) : interpreter;
         if (codeGenerator == null) {
+            // Under concurrent conditions ensure repeatability of the random generator.
+            Random random = new Random(seed);
             LiteralGenerator literals = new LiteralGeneratorImpl(random, codeNewIntegerBound);
             List<Instruction> instructionList = InstructionSet.ALL.getValues();
             InstructionGenerator instructions = new InstructionGeneratorImpl(random, codeLiteralPercentage, literals, instructionList);

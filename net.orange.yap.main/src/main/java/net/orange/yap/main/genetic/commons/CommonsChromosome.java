@@ -1,5 +1,6 @@
 package net.orange.yap.main.genetic.commons;
 
+import net.orange.yap.machine.YapRuntime;
 import net.orange.yap.machine.eval.EvaluationStrategy;
 import net.orange.yap.machine.stack.Program;
 import org.apache.commons.math3.genetics.Chromosome;
@@ -24,8 +25,8 @@ public class CommonsChromosome extends Chromosome {
         return program;
     }
 
-    EvaluationStrategy getEvaluation() {
-        return evaluation;
+    YapRuntime getRuntime() {
+        return evaluation.getRuntime();
     }
 
     @Override
