@@ -110,7 +110,7 @@ public class YapRuntimeFactoryImpl implements YapRuntimeFactory {
     }
 
     @Override
-    public YapRuntime create() {
+    public synchronized YapRuntime create() {
         if (parser == null || serializer == null) {
             CodeParserImpl impl = new CodeParserImpl();
             parser = parser == null ? impl : parser;

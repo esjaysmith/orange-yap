@@ -18,7 +18,13 @@ def step_x(x):
 step = np.vectorize(step_x)
 
 
-def create_rnn(num_input, num_hidden, num_output, floats=None):
+def create_local_random_from_float(f):
+    return np.random.RandomState(min(2 ** 32 - 1, int(abs(f) * 1e6)))
+
+
+def create_rnn(num_input, num_hidden, num_output, variance=1, floats=None):
+    # Set small (abs) weights to zero. The amount is determined by a percentage interpreted
+    # from the ints stack.
     floats = [.42] if floats is None else floats
     l1 = num_input * num_hidden
     l2 = num_hidden * num_hidden
@@ -27,10 +33,18 @@ def create_rnn(num_input, num_hidden, num_output, floats=None):
     b3 = num_output
     num_weights = l1 + l2 + l3
     weights = np.zeros(num_weights)
+    scale = 1.
     for f in floats:
-        seed = min(2 ** 32 - 1, int(abs(f) * 1e6))
-        local_state = np.random.RandomState(seed)
-        weights += local_state.normal(0, 1e-2, num_weights)
+        local_state = create_local_random_from_float(f)
+        weights += local_state.normal(0, variance, num_weights) * scale
+        scale = max(1e-6, scale * .9)
+
+    # Take the first float as threshold to zero-out weights.
+    # _rnd = create_local_random_from_float(floats[0])
+    # zero_prob = abs(floats[0])
+    # _rnd_array = _rnd.random_sample(num_weights)
+    # weights[_rnd_array > zero_prob] = 0
+
     w_in = np.resize(weights[:l1], (num_input, num_hidden))
     w_h = np.resize(weights[l1:l1 + l2], (num_hidden, num_hidden))
     w_out = np.resize(weights[l1 + l2:l1 + l2 + l3], (num_hidden, num_output))
