@@ -29,7 +29,4 @@ public class RemoteChromosome extends CommonsChromosome {
         return isEvaluated() ? fitness : -1f;
     }
 
-    public String toCodeString() {
-        return getRuntime().asString(getProgram());
-    }
 }

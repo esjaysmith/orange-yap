@@ -25,8 +25,12 @@ public class CommonsChromosome extends Chromosome {
         return program;
     }
 
-    YapRuntime getRuntime() {
+    private YapRuntime getRuntime() {
         return evaluation.getRuntime();
+    }
+
+    public String toCodeString() {
+        return getRuntime().asString(getProgram());
     }
 
     @Override
@@ -49,6 +53,6 @@ public class CommonsChromosome extends Chromosome {
 
     @Override
     public String toString() {
-        return program + " with fitness=" + fitness();
+        return toCodeString() + " with fitness=" + fitness();
     }
 }

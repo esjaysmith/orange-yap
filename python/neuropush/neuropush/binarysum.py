@@ -44,17 +44,31 @@ class EvolveBinarySumDirect(object):
         self.num_hidden = num_hidden
         self.x_train, self.y_train, self.x_test, self.y_test = binary_sum_train_test(dimension=dimension, num_samples=num_samples)
 
-    def train_fitness(self, floats, echo=False):
-        return self._fitness(self.x_train, self.y_train, floats, echo=echo)
+    def create_network(self, floats):
+        return create_rnn(self.dimension, self.num_hidden, self.dimension, floats=floats)
 
-    def test_fitness(self, floats, echo=False):
-        return self._fitness(self.x_test, self.y_test, floats, echo=echo)
+    def train_fitness(self, network, echo=False):
+        return self._net_fitness(self.x_train, self.y_train, network, echo=echo)
 
-    def _fitness(self, x_data, y_label, floats, echo=False):
-        if len(floats) < 1:
-            return 0.
-        _net = create_rnn(self.dimension, self.num_hidden, self.dimension, floats=floats)
-        _err = 0
+    def test_fitness(self, network, echo=False):
+        return self._net_fitness(self.x_test, self.y_test, network, echo=echo)
+
+    def fingerprint(self, network):
+        _values = np.zeros(len(self.x_train) * self.dimension)
+        try:
+            for i in range(len(self.x_train)):
+                a, b = self.x_train[i]
+                network.reset()
+                network.forward(a)
+                _values[i * self.dimension: (i * self.dimension) + self.dimension] = step(network.forward(b))[0]
+        except ArithmeticError:
+            pass
+        finally:
+            return _values
+
+    def _net_fitness(self, x_data, y_label, _net, echo=False):
+        _max_score = 1. * len(x_data) * self.dimension
+        _score = _max_score
         try:
             for i in range(len(x_data)):
                 a, b = x_data[i]
@@ -62,11 +76,11 @@ class EvolveBinarySumDirect(object):
                 _net.reset()
                 _net.forward(a)
                 _out = step(_net.forward(b))[0]
-                _err += sum(abs(c - _out))
+                _score -= sum((c - _out) ** 2)
                 if echo:
                     int_a = binary2int(a)
                     int_b = binary2int(b)
-                    print("{} + {} = {} ({}) err:{}".format(int_a, int_b, c, _out, _err))
-            return 1. / _err
+                    print("{} + {} = {} ({}) err:{}".format(int_a, int_b, c, _out, _score))
+            return _score / _max_score
         except ArithmeticError:
             return 0.

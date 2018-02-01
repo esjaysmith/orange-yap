@@ -25,7 +25,7 @@ def create_local_random_from_float(f):
 def create_rnn(num_input, num_hidden, num_output, variance=1, floats=None):
     # Set small (abs) weights to zero. The amount is determined by a percentage interpreted
     # from the ints stack.
-    floats = [.42] if floats is None else floats
+    floats = [.22] if floats is None else floats
     l1 = num_input * num_hidden
     l2 = num_hidden * num_hidden
     l3 = num_hidden * num_output
@@ -33,12 +33,11 @@ def create_rnn(num_input, num_hidden, num_output, variance=1, floats=None):
     b3 = num_output
     num_weights = l1 + l2 + l3
     weights = np.zeros(num_weights)
-    scale = 1.
     for f in floats:
         local_state = create_local_random_from_float(f)
-        weights += local_state.normal(0, variance, num_weights) * scale
-        scale = max(1e-6, scale * .9)
-
+        weights += local_state.normal(0, variance, num_weights)
+    # for i, f in enumerate(floats):
+    #     weights[i % num_weights] += f
     # Take the first float as threshold to zero-out weights.
     # _rnd = create_local_random_from_float(floats[0])
     # zero_prob = abs(floats[0])
@@ -62,7 +61,13 @@ class RNN(object):
         self.bias_h = bias_h
         self.bias_out = bias_out
         self.activation_h = None
+        self.parameter_count = self.weight_in.shape[0] * self.weight_in.shape[1] + \
+                               self.num_hidden ** 2 + self.weight_out.shape[0] * self.weight_out.shape[1] + \
+                               len(self.bias_h) + len(self.bias_out)
         self.reset()
+
+    def count_parameters(self):
+        return self.parameter_count
 
     def reset(self):
         self.activation_h = np.zeros(self.num_hidden)
